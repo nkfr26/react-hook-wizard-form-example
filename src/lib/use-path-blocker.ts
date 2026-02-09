@@ -2,11 +2,11 @@ import { useBlocker } from "@tanstack/react-router";
 import type { FileRoutesByFullPath } from "@/routeTree.gen";
 
 export function usePathBlocker({
-  isDirty,
+  isDirty = true,
   pathname,
   message,
 }: {
-  isDirty: boolean;
+  isDirty?: boolean;
   pathname: keyof FileRoutesByFullPath;
   message: string;
 }) {
