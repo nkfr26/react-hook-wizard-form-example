@@ -10,8 +10,8 @@ export const Route = createFileRoute("/form/step-one")({
 function RouteComponent() {
   const navigate = useNavigate();
   const {
-    handleNext,
     register,
+    handleNext,
     handleKeyDown,
     formState: { errors },
   } = useWizardFormContext<LoginOutput>({
