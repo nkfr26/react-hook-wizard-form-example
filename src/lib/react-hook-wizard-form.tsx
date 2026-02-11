@@ -1,12 +1,13 @@
 import React from "react";
 import {
-  type ControllerProps,
   type FieldPath,
   type FieldValues,
-  Controller as RHFController,
+  type UseControllerProps,
+  type UseControllerReturn,
   type UseFormRegister,
   useFormContext,
   useFormState,
+  useController as useRHFController,
 } from "react-hook-form";
 
 export function useWizardFormContext<TFieldValues extends FieldValues>({
@@ -18,7 +19,6 @@ export function useWizardFormContext<TFieldValues extends FieldValues>({
     trigger,
     getValues,
     register: rhfRegister,
-    control,
     ...restUseFormContext
   } = useFormContext<TFieldValues>();
   const [shouldRevalidate, setShouldRevalidate] = React.useState(false);
@@ -59,44 +59,36 @@ export function useWizardFormContext<TFieldValues extends FieldValues>({
       }
     };
 
-  const Controller = (
-    props: Omit<ControllerProps<TFieldValues>, "control">,
-  ) => {
-    return (
-      <RHFController
-        {...props}
-        control={control}
-        render={(renderProps) => {
-          const { field } = renderProps;
-          return props.render({
-            ...renderProps,
-            field: {
-              ...field,
-              onChange: async (...event) => {
-                field.onChange(...event);
-                if (shouldRevalidate) {
-                  await trigger(props.name);
-                }
-              },
-              onBlur: async () => {
-                field.onBlur();
-                if (shouldRevalidate) {
-                  await trigger(props.name);
-                }
-              },
-            },
-          });
-        }}
-      />
-    );
+  const useController = (
+    props: UseControllerProps<TFieldValues>,
+  ): UseControllerReturn<TFieldValues> => {
+    const controller = useRHFController(props);
+    return {
+      ...controller,
+      field: {
+        ...controller.field,
+        onChange: async (...event) => {
+          controller.field.onChange(...event);
+          if (shouldRevalidate) {
+            await trigger(props.name);
+          }
+        },
+        onBlur: async () => {
+          controller.field.onBlur();
+          if (shouldRevalidate) {
+            await trigger(props.name);
+          }
+        },
+      },
+    };
   };
 
   return {
     handleNext,
     register,
     handleKeyDown,
-    Controller,
+    useController,
     ...restUseFormContext,
-    formState: useFormState({ control }),
+    formState: useFormState(),
   };
 }
