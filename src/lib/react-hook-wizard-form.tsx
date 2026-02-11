@@ -18,7 +18,7 @@ export function useWizardFormContext<TFieldValues extends FieldValues>({
   const {
     trigger,
     getValues,
-    register: rhfRegister,
+    register: RHFRegister,
     handleSubmit: _handleSubmit,
     ...restUseFormContext
   } = useFormContext<TFieldValues>();
@@ -35,7 +35,7 @@ export function useWizardFormContext<TFieldValues extends FieldValues>({
     };
 
   const register: UseFormRegister<TFieldValues> = (name) => {
-    const { onChange, onBlur, ...restRegister } = rhfRegister(name);
+    const { onChange, onBlur, ...restRegister } = RHFRegister(name);
     return {
       onChange: async (event) => {
         await onChange(event);
