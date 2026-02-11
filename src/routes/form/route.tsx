@@ -30,6 +30,11 @@ function RouteComponent() {
     formState: { isDirty },
   } = methods;
 
+  const onSubmit = handleSubmit(async () => {
+    flushSync(() => reset());
+    await navigate({ to: "/" });
+  });
+
   usePathBlocker({
     isDirty,
     pathname: "/form",
@@ -37,12 +42,7 @@ function RouteComponent() {
   });
   return (
     <FormProvider {...methods}>
-      <form
-        onSubmit={handleSubmit(() => {
-          flushSync(() => reset());
-          navigate({ to: "/" });
-        })}
-      >
+      <form onSubmit={onSubmit}>
         <Outlet />
       </form>
     </FormProvider>
