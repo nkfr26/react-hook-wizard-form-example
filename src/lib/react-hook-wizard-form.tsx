@@ -86,11 +86,13 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
   };
 
   return {
+    trigger,
+    getValues,
     ...restUseFormContext,
-    formState: useFormState(),
     register,
     useController,
     handleNext,
     handleKeyDown,
+    formState: useFormState(),
   };
 }
