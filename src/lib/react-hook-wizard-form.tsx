@@ -29,17 +29,17 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
     };
 
   const register: UseFormRegister<TFieldValues> = (name) => {
-    const { onChange, onBlur, ...restRegister } = formContext.register(name);
+    const register = formContext.register(name);
     return {
-      ...restRegister,
+      ...register,
       onChange: async (event) => {
-        await onChange(event);
+        await register.onChange(event);
         if (shouldRevalidate) {
           await formContext.trigger(name);
         }
       },
       onBlur: async (event) => {
-        await onBlur(event);
+        await register.onBlur(event);
         if (shouldRevalidate) {
           await formContext.trigger(name);
         }
