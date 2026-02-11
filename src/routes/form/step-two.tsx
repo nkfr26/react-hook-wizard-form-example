@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Input } from "@/components/ui/input";
 import { useWizardFormContext } from "@/lib/react-hook-wizard-form";
 import type { LoginOutput } from "./route";
 
@@ -26,7 +25,7 @@ function RouteComponent() {
   const onKeyDown = handleKeyDown(onNext);
   return (
     <>
-      <Input type="password" {...passwordField} onKeyDown={onKeyDown} />
+      <input type="password" {...passwordField} onKeyDown={onKeyDown} />
       {errors.password?.message}
       <button type="button" onClick={onBack}>
         Back

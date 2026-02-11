@@ -38,7 +38,7 @@ function RouteComponent() {
   usePathBlocker({
     isDirty,
     pathname: "/form",
-    message: "Are you sure you want to leave?",
+    message: "このページを離れますか？行った変更は保存されません。",
   });
   return (
     <FormProvider {...methods}>
