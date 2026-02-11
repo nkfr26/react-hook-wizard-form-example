@@ -10,16 +10,15 @@ function RouteComponent() {
   const navigate = useNavigate();
   const {
     register,
-    handleNext,
-    handleKeyDown,
+    handle,
     formState: { errors },
   } = useWizardFormContext<LoginOutput>(["email"]);
 
-  const onNext = handleNext(async (data) => {
+  const onNext = handle.next(async (data) => {
     console.log(data);
     await navigate({ to: "/form/step-two" });
   });
-  const onKeyDown = handleKeyDown(onNext);
+  const onKeyDown = handle.keyDown(onNext);
   return (
     <>
       <input type="email" {...register("email")} onKeyDown={onKeyDown} />

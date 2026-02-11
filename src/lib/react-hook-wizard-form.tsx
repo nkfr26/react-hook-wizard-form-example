@@ -16,7 +16,7 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
   const formContext = useFormContext<TFieldValues>();
   const [shouldRevalidate, setShouldRevalidate] = React.useState(false);
 
-  const handleNext =
+  const next =
     (onValid: (data: TFieldValues) => unknown | Promise<unknown>) =>
     async () => {
       if (await formContext.trigger(name)) {
@@ -44,8 +44,8 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
     };
   };
 
-  const handleKeyDown =
-    (onNext: ReturnType<typeof handleNext>) => (event: React.KeyboardEvent) => {
+  const keyDown =
+    (onNext: ReturnType<typeof next>) => (event: React.KeyboardEvent) => {
       if (event.key === "Enter") {
         event.preventDefault();
         onNext();
@@ -78,8 +78,7 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
     ...formContext,
     register,
     useController,
-    handleNext,
-    handleKeyDown,
+    handle: { next, keyDown },
     formState: useFormState(),
   };
 }

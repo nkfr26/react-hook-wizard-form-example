@@ -8,17 +8,18 @@ export const Route = createFileRoute("/form/step-two")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const { useController, handleNext, handleKeyDown } =
-    useWizardFormContext<LoginOutput>(["password"]);
+  const { useController, handle } = useWizardFormContext<LoginOutput>([
+    "password",
+  ]);
   const password = useController({ name: "password" });
 
   const onBack = async () => {
     await navigate({ to: "/form/step-one" });
   };
-  const onNext = handleNext(async () => {
+  const onNext = handle.next(async () => {
     await navigate({ to: "/form/confirm" });
   });
-  const onKeyDown = handleKeyDown(onNext);
+  const onKeyDown = handle.keyDown(onNext);
   return (
     <>
       <input type="password" {...password.field} onKeyDown={onKeyDown} />
