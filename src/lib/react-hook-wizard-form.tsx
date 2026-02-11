@@ -2,9 +2,6 @@ import React from "react";
 import {
   type FieldPath,
   type FieldValues,
-  type UseControllerProps,
-  type UseControllerReturn,
-  type UseFormRegister,
   useFormContext,
   useFormState,
   useController as useRhfController,
@@ -28,7 +25,7 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
       setShouldRevalidate(true);
     };
 
-  const register: UseFormRegister<TFieldValues> = (name) => {
+  const register: typeof formContext.register = (name) => {
     const register = formContext.register(name);
     return {
       ...register,
@@ -55,9 +52,7 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
       }
     };
 
-  const useController = (
-    props: UseControllerProps<TFieldValues>,
-  ): UseControllerReturn<TFieldValues> => {
+  const useController: typeof useRhfController<TFieldValues> = (props) => {
     const controller = useRhfController(props);
     return {
       ...controller,
