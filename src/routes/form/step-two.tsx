@@ -14,16 +14,13 @@ function RouteComponent() {
     handleNext,
     handleKeyDown,
     formState: { errors },
-  } = useWizardFormContext<LoginOutput>({
-    fieldPaths: ["password"],
-  });
+  } = useWizardFormContext<LoginOutput>(["password"]);
   const { field: passwordField } = useController({ name: "password" });
 
   const onBack = () => {
     navigate({ to: "/form/step-one" });
   };
-  const onNext = handleNext((data) => {
-    console.log(data);
+  const onNext = handleNext(() => {
     navigate({ to: "/form/confirm" });
   });
   const onKeyDown = handleKeyDown(onNext);

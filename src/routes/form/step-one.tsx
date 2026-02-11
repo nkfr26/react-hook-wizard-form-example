@@ -14,9 +14,7 @@ function RouteComponent() {
     handleNext,
     handleKeyDown,
     formState: { errors },
-  } = useWizardFormContext<LoginOutput>({
-    fieldPaths: ["email"],
-  });
+  } = useWizardFormContext<LoginOutput>(["email"]);
 
   const onNext = handleNext((data) => {
     console.log(data);

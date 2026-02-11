@@ -7,19 +7,19 @@ import {
   type UseFormRegister,
   useFormContext,
   useFormState,
-  useController as useRHFController,
+  useController as useRhfController,
 } from "react-hook-form";
 
-export function useWizardFormContext<TFieldValues extends FieldValues>({
-  fieldPaths,
-}: {
-  fieldPaths: FieldPath<TFieldValues>[];
-}) {
+export function useWizardFormContext<TFieldValues extends FieldValues>(
+  name?:
+    | FieldPath<TFieldValues>
+    | FieldPath<TFieldValues>[]
+    | readonly FieldPath<TFieldValues>[],
+) {
   const {
     trigger,
     getValues,
-    register: RHFRegister,
-    handleSubmit: _handleSubmit,
+    register: rhfRegister,
     ...restUseFormContext
   } = useFormContext<TFieldValues>();
 
@@ -28,15 +28,16 @@ export function useWizardFormContext<TFieldValues extends FieldValues>({
   const handleNext =
     (onValid: (data: TFieldValues) => unknown | Promise<unknown>) =>
     async () => {
-      if (await trigger(fieldPaths)) {
+      if (await trigger(name)) {
         await onValid(getValues());
       }
       setShouldRevalidate(true);
     };
 
   const register: UseFormRegister<TFieldValues> = (name) => {
-    const { onChange, onBlur, ...restRegister } = RHFRegister(name);
+    const { onChange, onBlur, ...restRegister } = rhfRegister(name);
     return {
+      ...restRegister,
       onChange: async (event) => {
         await onChange(event);
         if (shouldRevalidate) {
@@ -49,7 +50,6 @@ export function useWizardFormContext<TFieldValues extends FieldValues>({
           await trigger(name);
         }
       },
-      ...restRegister,
     };
   };
 
@@ -64,7 +64,7 @@ export function useWizardFormContext<TFieldValues extends FieldValues>({
   const useController = (
     props: UseControllerProps<TFieldValues>,
   ): UseControllerReturn<TFieldValues> => {
-    const controller = useRHFController(props);
+    const controller = useRhfController(props);
     return {
       ...controller,
       field: {
@@ -86,11 +86,11 @@ export function useWizardFormContext<TFieldValues extends FieldValues>({
   };
 
   return {
-    handleNext,
-    register,
-    handleKeyDown,
-    useController,
     ...restUseFormContext,
     formState: useFormState(),
+    register,
+    useController,
+    handleNext,
+    handleKeyDown,
   };
 }
