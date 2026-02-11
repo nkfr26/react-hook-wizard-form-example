@@ -16,38 +16,32 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
     | FieldPath<TFieldValues>[]
     | readonly FieldPath<TFieldValues>[],
 ) {
-  const {
-    trigger,
-    getValues,
-    register: rhfRegister,
-    ...restUseFormContext
-  } = useFormContext<TFieldValues>();
-
+  const formContext = useFormContext<TFieldValues>();
   const [shouldRevalidate, setShouldRevalidate] = React.useState(false);
 
   const handleNext =
     (onValid: (data: TFieldValues) => unknown | Promise<unknown>) =>
     async () => {
-      if (await trigger(name)) {
-        await onValid(getValues());
+      if (await formContext.trigger(name)) {
+        await onValid(formContext.getValues());
       }
       setShouldRevalidate(true);
     };
 
   const register: UseFormRegister<TFieldValues> = (name) => {
-    const { onChange, onBlur, ...restRegister } = rhfRegister(name);
+    const { onChange, onBlur, ...restRegister } = formContext.register(name);
     return {
       ...restRegister,
       onChange: async (event) => {
         await onChange(event);
         if (shouldRevalidate) {
-          await trigger(name);
+          await formContext.trigger(name);
         }
       },
       onBlur: async (event) => {
         await onBlur(event);
         if (shouldRevalidate) {
-          await trigger(name);
+          await formContext.trigger(name);
         }
       },
     };
@@ -72,13 +66,13 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
         onChange: async (...event) => {
           controller.field.onChange(...event);
           if (shouldRevalidate) {
-            await trigger(props.name);
+            await formContext.trigger(props.name);
           }
         },
         onBlur: async () => {
           controller.field.onBlur();
           if (shouldRevalidate) {
-            await trigger(props.name);
+            await formContext.trigger(props.name);
           }
         },
       },
@@ -86,9 +80,7 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
   };
 
   return {
-    trigger,
-    getValues,
-    ...restUseFormContext,
+    ...formContext,
     register,
     useController,
     handleNext,
