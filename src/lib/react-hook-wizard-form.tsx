@@ -19,8 +19,10 @@ export function useWizardFormContext<TFieldValues extends FieldValues>({
     trigger,
     getValues,
     register: rhfRegister,
+    handleSubmit: _handleSubmit,
     ...restUseFormContext
   } = useFormContext<TFieldValues>();
+
   const [shouldRevalidate, setShouldRevalidate] = React.useState(false);
 
   const handleNext =
