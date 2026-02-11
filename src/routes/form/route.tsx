@@ -24,19 +24,14 @@ function RouteComponent() {
       password: "",
     },
   });
-  const {
-    handleSubmit,
-    reset,
-    formState: { isDirty },
-  } = methods;
 
-  const onSubmit = handleSubmit(async () => {
-    flushSync(() => reset());
+  const onSubmit = methods.handleSubmit(async () => {
+    flushSync(() => methods.reset());
     await navigate({ to: "/" });
   });
 
   usePathBlocker({
-    isDirty,
+    isDirty: methods.formState.isDirty,
     pathname: "/form",
     message: "このページを離れますか？行った変更は保存されません。",
   });
