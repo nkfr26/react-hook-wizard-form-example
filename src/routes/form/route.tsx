@@ -1,8 +1,9 @@
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { flushSync } from "react-dom";
-import { FormProvider, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import * as v from "valibot";
+import { WizardFormProvider } from "@/lib/react-hook-wizard-form";
 import { usePathBlocker } from "@/lib/use-path-blocker";
 
 export const Route = createFileRoute("/form")({
@@ -36,10 +37,10 @@ function RouteComponent() {
     message: "このページを離れますか？行った変更は保存されません。",
   });
   return (
-    <FormProvider {...methods}>
+    <WizardFormProvider {...methods}>
       <form onSubmit={onSubmit}>
         <Outlet />
       </form>
-    </FormProvider>
+    </WizardFormProvider>
   );
 }

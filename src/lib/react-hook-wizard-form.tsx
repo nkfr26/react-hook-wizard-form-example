@@ -2,10 +2,31 @@ import React from "react";
 import {
   type FieldPath,
   type FieldValues,
+  FormProvider,
+  type FormProviderProps,
   useFormContext,
   useFormState,
   useController as useRhfController,
 } from "react-hook-form";
+
+type WizardContext = {
+  shouldRevalidate: boolean;
+  setShouldRevalidate: React.Dispatch<React.SetStateAction<boolean>>;
+};
+const WizardContext = React.createContext<WizardContext | null>(null);
+
+export function WizardFormProvider<TFieldValues extends FieldValues>(
+  props: FormProviderProps<TFieldValues>,
+) {
+  const [shouldRevalidate, setShouldRevalidate] = React.useState(false);
+  return (
+    <FormProvider {...props}>
+      <WizardContext value={{ shouldRevalidate, setShouldRevalidate }}>
+        {props.children}
+      </WizardContext>
+    </FormProvider>
+  );
+}
 
 export function useWizardFormContext<TFieldValues extends FieldValues>(
   name?:
@@ -14,15 +35,22 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
     | readonly FieldPath<TFieldValues>[],
 ) {
   const formContext = useFormContext<TFieldValues>();
-  const [shouldRevalidate, setShouldRevalidate] = React.useState(false);
+  const wizardContext = React.useContext(WizardContext);
+  if (!wizardContext) {
+    throw new Error(
+      "useWizardFormContext must be used within a WizardFormProvider",
+    );
+  }
 
   const next =
     (onValid: (data: TFieldValues) => unknown | Promise<unknown>) =>
     async () => {
       if (await formContext.trigger(name)) {
+        wizardContext.setShouldRevalidate(false);
         await onValid(formContext.getValues());
+      } else {
+        wizardContext.setShouldRevalidate(true);
       }
-      setShouldRevalidate(true);
     };
 
   const register: typeof formContext.register = (name) => {
@@ -31,13 +59,13 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
       ...register,
       onChange: async (event) => {
         await register.onChange(event);
-        if (shouldRevalidate) {
+        if (wizardContext.shouldRevalidate) {
           await formContext.trigger(name);
         }
       },
       onBlur: async (event) => {
         await register.onBlur(event);
-        if (shouldRevalidate) {
+        if (wizardContext.shouldRevalidate) {
           await formContext.trigger(name);
         }
       },
@@ -60,13 +88,13 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
         ...controller.field,
         onChange: async (...event) => {
           controller.field.onChange(...event);
-          if (shouldRevalidate) {
+          if (wizardContext.shouldRevalidate) {
             await formContext.trigger(props.name);
           }
         },
         onBlur: async () => {
           controller.field.onBlur();
-          if (shouldRevalidate) {
+          if (wizardContext.shouldRevalidate) {
             await formContext.trigger(props.name);
           }
         },
