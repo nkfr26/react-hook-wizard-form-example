@@ -89,8 +89,7 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
     };
 
   return {
-    ...formContext,
-    register,
+    ...({ ...formContext, register } satisfies UseFormReturn<TFieldValues>),
     handle: { next, keyDown },
   };
 }
