@@ -125,8 +125,6 @@ export function useWizardController<TFieldValues extends FieldValues>(
   };
 }
 
-export const WizardController = <
-  TFieldValues extends FieldValues = FieldValues,
->(
+export const WizardController = <TFieldValues extends FieldValues>(
   props: ControllerProps<TFieldValues>,
 ) => props.render(useWizardController<TFieldValues>(props));
