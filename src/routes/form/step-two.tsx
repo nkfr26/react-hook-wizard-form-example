@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
-  useWizardController,
   useWizardFormContext,
+  WizardController,
 } from "@/lib/react-hook-wizard-form";
 import type { LoginOutput } from "./route";
 
@@ -11,8 +11,7 @@ export const Route = createFileRoute("/form/step-two")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const { handle } = useWizardFormContext<LoginOutput>(["password"]);
-  const password = useWizardController({ name: "password" });
+  const { control, handle } = useWizardFormContext<LoginOutput>(["password"]);
 
   const onBack = async () => {
     await navigate({ to: "/form/step-one" });
@@ -23,8 +22,16 @@ function RouteComponent() {
   const onKeyDown = handle.keyDown(onNext);
   return (
     <>
-      <input type="password" {...password.field} onKeyDown={onKeyDown} />
-      {password.fieldState.error?.message}
+      <WizardController
+        control={control}
+        name="password"
+        render={({ field, fieldState }) => (
+          <>
+            <input type="password" {...field} onKeyDown={onKeyDown} />
+            {fieldState.error?.message}
+          </>
+        )}
+      />
       <button type="button" onClick={onBack}>
         Back
       </button>

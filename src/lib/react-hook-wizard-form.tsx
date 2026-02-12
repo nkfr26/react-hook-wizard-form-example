@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  type ControllerProps,
   type FieldPath,
   type FieldValues,
   FormProvider,
@@ -123,3 +124,9 @@ export function useWizardController<TFieldValues extends FieldValues>(
     },
   };
 }
+
+export const WizardController = <
+  TFieldValues extends FieldValues = FieldValues,
+>(
+  props: ControllerProps<TFieldValues>,
+) => props.render(useWizardController<TFieldValues>(props));
