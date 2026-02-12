@@ -4,9 +4,12 @@ import {
   type FieldValues,
   FormProvider,
   type FormProviderProps,
+  type UseControllerProps,
+  type UseControllerReturn,
+  type UseFormRegister,
+  useController,
   useFormContext,
   useFormState,
-  useController as useRhfController,
 } from "react-hook-form";
 
 type RevalidationContext = {
@@ -55,8 +58,8 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
       }
     };
 
-  const register: typeof formContext.register = (name) => {
-    const register = formContext.register(name);
+  const register: UseFormRegister<TFieldValues> = (name, options) => {
+    const register = formContext.register(name, options);
     return {
       ...register,
       onChange: async (event) => {
@@ -82,33 +85,41 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
       }
     };
 
-  const useController: typeof useRhfController<TFieldValues> = (props) => {
-    const controller = useRhfController(props);
-    return {
-      ...controller,
-      field: {
-        ...controller.field,
-        onChange: async (...event) => {
-          controller.field.onChange(...event);
-          if (revalidationContext.shouldRevalidate) {
-            await formContext.trigger(props.name);
-          }
-        },
-        onBlur: async () => {
-          controller.field.onBlur();
-          if (revalidationContext.shouldRevalidate) {
-            await formContext.trigger(props.name);
-          }
-        },
-      },
-    };
-  };
-
   return {
     ...formContext,
     register,
-    useController,
     handle: { next, keyDown },
     formState: useFormState(),
+  };
+}
+
+export function useWizardController<TFieldValues extends FieldValues>(
+  props: UseControllerProps<TFieldValues>,
+): UseControllerReturn<TFieldValues> {
+  const controller = useController(props);
+  const formContext = useFormContext<TFieldValues>();
+  const revalidationContext = React.useContext(RevalidationContext);
+  if (!revalidationContext) {
+    throw new Error(
+      "useWizardController must be used within a WizardFormProvider",
+    );
+  }
+  return {
+    ...controller,
+    field: {
+      ...controller.field,
+      onChange: async (...event) => {
+        controller.field.onChange(...event);
+        if (revalidationContext.shouldRevalidate) {
+          await formContext.trigger(props.name);
+        }
+      },
+      onBlur: async () => {
+        controller.field.onBlur();
+        if (revalidationContext.shouldRevalidate) {
+          await formContext.trigger(props.name);
+        }
+      },
+    },
   };
 }
