@@ -1,13 +1,15 @@
 import React from "react";
 import {
   type ControllerProps,
-  type FieldPath,
   type FieldValues,
   FormProvider,
   type FormProviderProps,
   type UseControllerProps,
   type UseControllerReturn,
+  type UseFormHandleSubmit,
   type UseFormRegister,
+  type UseFormReturn,
+  type UseFormTrigger,
   useController,
   useFormContext,
   useFormState,
@@ -35,12 +37,12 @@ export function WizardFormProvider<TFieldValues extends FieldValues>(
 }
 
 export function useWizardFormContext<TFieldValues extends FieldValues>(
-  name?:
-    | FieldPath<TFieldValues>
-    | FieldPath<TFieldValues>[]
-    | readonly FieldPath<TFieldValues>[],
+  ...[name, options]: Parameters<UseFormTrigger<TFieldValues>>
 ) {
-  const formContext = useFormContext<TFieldValues>();
+  const formContext: UseFormReturn<TFieldValues> = {
+    ...useFormContext<TFieldValues>(),
+    formState: useFormState<TFieldValues>({ name }),
+  };
   const revalidationContext = React.useContext(RevalidationContext);
   if (!revalidationContext) {
     throw new Error(
@@ -48,14 +50,14 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
     );
   }
 
-  const next =
-    (onValid: (data: TFieldValues) => unknown | Promise<unknown>) =>
-    async () => {
-      if (await formContext.trigger(name)) {
+  const next: UseFormHandleSubmit<TFieldValues> =
+    (onValid, onInvalid) => async (e) => {
+      if (await formContext.trigger(name, options)) {
         revalidationContext.setShouldRevalidate(false);
-        await onValid(formContext.getValues());
+        await onValid(formContext.getValues(), e);
       } else {
         revalidationContext.setShouldRevalidate(true);
+        await onInvalid?.(formContext.formState.errors, e);
       }
     };
 
@@ -90,7 +92,6 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
     ...formContext,
     register,
     handle: { next, keyDown },
-    formState: useFormState(),
   };
 }
 
