@@ -15,13 +15,11 @@ import {
   useFormState,
 } from "react-hook-form";
 
-type RevalidationContext = {
+type WizardContext = {
   shouldRevalidate: boolean;
   setShouldRevalidate: React.Dispatch<React.SetStateAction<boolean>>;
 };
-const RevalidationContext = React.createContext<RevalidationContext | null>(
-  null,
-);
+const WizardContext = React.createContext<WizardContext | null>(null);
 
 export function WizardFormProvider<TFieldValues extends FieldValues>(
   props: FormProviderProps<TFieldValues>,
@@ -29,9 +27,9 @@ export function WizardFormProvider<TFieldValues extends FieldValues>(
   const [shouldRevalidate, setShouldRevalidate] = React.useState(false);
   return (
     <FormProvider {...props}>
-      <RevalidationContext value={{ shouldRevalidate, setShouldRevalidate }}>
+      <WizardContext value={{ shouldRevalidate, setShouldRevalidate }}>
         {props.children}
-      </RevalidationContext>
+      </WizardContext>
     </FormProvider>
   );
 }
@@ -43,37 +41,37 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
     ...useFormContext<TFieldValues>(),
     formState: useFormState<TFieldValues>({ name }),
   };
-  const revalidationContext = React.useContext(RevalidationContext);
-  if (!revalidationContext) {
+  const wizardContext = React.useContext(WizardContext);
+  if (!wizardContext)
     throw new Error(
       "useWizardFormContext must be used within a WizardFormProvider",
     );
-  }
 
   const next: UseFormHandleSubmit<TFieldValues> =
     (onValid, onInvalid) => async (e) => {
+      e?.preventDefault();
       if (await formContext.trigger(name, options)) {
-        revalidationContext.setShouldRevalidate(false);
         await onValid(formContext.getValues(), e);
+        wizardContext.setShouldRevalidate(false);
       } else {
-        revalidationContext.setShouldRevalidate(true);
+        wizardContext.setShouldRevalidate(true);
         await onInvalid?.(formContext.formState.errors, e);
       }
     };
 
   const register: UseFormRegister<TFieldValues> = (name, options) => {
-    const register = formContext.register(name, options);
+    const baseRegister = formContext.register(name, options);
     return {
-      ...register,
+      ...baseRegister,
       onChange: async (event) => {
-        await register.onChange(event);
-        if (revalidationContext.shouldRevalidate) {
+        await baseRegister.onChange(event);
+        if (wizardContext.shouldRevalidate) {
           await formContext.trigger(name);
         }
       },
       onBlur: async (event) => {
-        await register.onBlur(event);
-        if (revalidationContext.shouldRevalidate) {
+        await baseRegister.onBlur(event);
+        if (wizardContext.shouldRevalidate) {
           await formContext.trigger(name);
         }
       },
@@ -97,27 +95,29 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
 export function useWizardController<TFieldValues extends FieldValues>(
   props: UseControllerProps<TFieldValues>,
 ): UseControllerReturn<TFieldValues> {
-  const controller = useController(props);
-  const formContext = useFormContext<TFieldValues>();
-  const revalidationContext = React.useContext(RevalidationContext);
-  if (!revalidationContext) {
+  const [controller, formContext, wizardContext] = [
+    useController(props),
+    useFormContext<TFieldValues>(),
+    React.useContext(WizardContext),
+  ];
+  if (!wizardContext)
     throw new Error(
       "useWizardController must be used within a WizardFormProvider",
     );
-  }
+
   return {
     ...controller,
     field: {
       ...controller.field,
       onChange: async (...event) => {
         controller.field.onChange(...event);
-        if (revalidationContext.shouldRevalidate) {
+        if (wizardContext.shouldRevalidate) {
           await formContext.trigger(props.name);
         }
       },
       onBlur: async () => {
         controller.field.onBlur();
-        if (revalidationContext.shouldRevalidate) {
+        if (wizardContext.shouldRevalidate) {
           await formContext.trigger(props.name);
         }
       },
