@@ -19,7 +19,7 @@ function RouteComponent() {
   const onNext = handle.next(async () => {
     await navigate({ to: "/form/confirm" });
   });
-  const onKeyDown = handle.keyDown(onNext);
+  const onKeyDown = handle.keyDown();
   return (
     <>
       <WizardController

@@ -79,10 +79,10 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
   };
 
   const keyDown =
-    (onNext: ReturnType<typeof next>) => (event: React.KeyboardEvent) => {
+    (onNext?: ReturnType<typeof next>) => (event: React.KeyboardEvent) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        onNext();
+        onNext?.();
       }
     };
 
