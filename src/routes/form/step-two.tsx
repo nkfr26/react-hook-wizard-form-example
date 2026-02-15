@@ -19,7 +19,6 @@ function RouteComponent() {
   const onNext = handle.next(async () => {
     await navigate({ to: "/form/confirm" });
   });
-  const onKeyDown = handle.keyDown();
   return (
     <>
       <WizardController
@@ -27,7 +26,7 @@ function RouteComponent() {
         name="password"
         render={({ field, fieldState }) => (
           <>
-            <input type="password" {...field} onKeyDown={onKeyDown} />
+            <input type="password" {...field} />
             {fieldState.error?.message}
           </>
         )}

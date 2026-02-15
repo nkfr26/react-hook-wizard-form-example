@@ -75,14 +75,19 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
           await formContext.trigger(name);
         }
       },
+      onKeyDown: (event: React.KeyboardEvent) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+        }
+      },
     };
   };
 
   const keyDown =
-    (onNext?: ReturnType<typeof next>) => (event: React.KeyboardEvent) => {
+    (onNext: ReturnType<typeof next>) => (event: React.KeyboardEvent) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        onNext?.();
+        onNext();
       }
     };
 
@@ -94,7 +99,9 @@ export function useWizardFormContext<TFieldValues extends FieldValues>(
 
 export function useWizardController<TFieldValues extends FieldValues>(
   props: UseControllerProps<TFieldValues>,
-): UseControllerReturn<TFieldValues> {
+): UseControllerReturn<TFieldValues> & {
+  field: { onKeyDown: (event: React.KeyboardEvent) => void };
+} {
   const [controller, formContext, wizardContext] = [
     useController(props),
     useFormContext<TFieldValues>(),
@@ -119,6 +126,11 @@ export function useWizardController<TFieldValues extends FieldValues>(
         controller.field.onBlur();
         if (wizardContext.shouldRevalidate) {
           await formContext.trigger(props.name);
+        }
+      },
+      onKeyDown: (event: React.KeyboardEvent) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
         }
       },
     },
